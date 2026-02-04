@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Birthday Surprise</title>
+
+<style>
+body{
+margin:0;
+background:#090014;
+color:white;
+font-family:Arial;
+overflow:hidden;
+}
+
+.wrapper{
+position:fixed;
+inset:18px;
+border-radius:26px;
+box-shadow:0 0 40px hotpink,0 0 90px pink inset;
+overflow:hidden;
+}
+
+/* 🎁 Gift */
+#gift{
+position:absolute;
+inset:0;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:180px;
+cursor:pointer;
+animation:pulse 1.4s infinite;
+z-index:10;
+}
+@keyframes pulse{50%{transform:scale(1.12)}}
+
+/* 🎀 Ribbon */
+#ribbon{
+position:absolute;
+inset:0;
+display:none;
+z-index:9;
+}
+.left,.right{
+position:absolute;
+width:50%;
+height:100%;
+background:hotpink;
+transition:1.2s;
+}
+.left{left:0}
+.right{right:0}
+.open .left{transform:translateX(-100%)}
+.open .right{transform:translateX(100%)}
+
+/* 🌌 FULL BACKGROUND WALL */
+.photo-bg{
+position:absolute;
+inset:0;
+display:none;
+overflow:hidden;
+z-index:1;
+background:#111;
+}
+
+.wall{
+display:grid;
+grid-template-columns:repeat(auto-fill,160px);
+grid-auto-rows:110px;
+gap:20px;
+width:140%;
+height:140%;
+padding:30px;
+animation:moveZoom 38s linear infinite;
+}
+
+.wall img{
+width:160px;
+height:110px;
+object-fit:cover;
+border-radius:14px;
+box-shadow:0 8px 22px rgba(0,0,0,.6);
+}
+
+@keyframes moveZoom{
+0%{transform:scale(1) translate(0,0);}
+50%{transform:scale(1.3) translate(-180px,-140px);}
+100%{transform:scale(1) translate(0,0);}
+}
+
+/* 📦 Content */
+#content{
+display:none;
+position:absolute;
+inset:0;
+padding-top:70px;
+z-index:5;
+text-align:center;
+}
+
+.box{
+width:60%;
+margin:auto;
+background:rgba(0,0,0,.65);
+padding:30px;
+border-radius:24px;
+box-shadow:0 0 35px hotpink;
+}
+
+.title{
+font-size:1.9em;
+color:#ffc1ef;
+margin-bottom:18px;
+}
+
+.text{
+line-height:1.8;
+}
+
+.photos{
+display:flex;
+justify-content:center;
+gap:25px;
+margin-top:35px;
+}
+
+.photos img{
+width:240px;
+height:240px;
+object-fit:cover;
+border-radius:22px;
+animation:glow 2s infinite alternate;
+}
+
+@keyframes glow{
+0%{box-shadow:0 0 22px hotpink}
+50%{box-shadow:0 0 40px cyan}
+100%{box-shadow:0 0 60px hotpink}
+}
+
+/* 🎆 Fireworks */
+canvas{
+position:absolute;
+inset:0;
+pointer-events:none;
+z-index:3;
+}
+</style>
+</head>
+<body>
+
+<audio id="music" loop>
+  <source src="song.mp3">
+</audio>
+
+<div class="wrapper">
+
+<div class="photo-bg" id="bg">
+<div class="wall" id="wall"></div>
+</div>
+
+<div id="gift">🎁</div>
+
+<div id="ribbon">
+<div class="left"></div>
+<div class="right"></div>
+</div>
+
+<div id="content">
+<div class="box">
+<div class="title">HAPPY BIRTHDAY TO MY BEST PANDA FOREVER 💖</div>
+<div class="text">
+Today is not just your birthday — it’s the day my favorite person entered the world.  
+You are my happiness, my peace, my comfort and my biggest blessing.  
+
+Every memory with you is special and every smile of yours makes life brighter.  
+I promise to always stand beside you no matter what.  
+
+May your life be filled with love, success and endless joy ❤️
+</div>
+</div>
+
+<div class="photos">
+<img src="image1.jpg">
+<img src="image2.jpg">
+<img src="image3.jpg">
+</div>
+</div>
+
+<canvas id="fire"></canvas>
+</div>
+
+<script>
+/* 🔁 Fill background with repeating photos */
+const wall=document.getElementById("wall");
+let imgs=[];
+for(let i=1;i<=21;i++) imgs.push("image"+i+".jpg");
+
+for(let i=0;i<140;i++){
+ let im=document.createElement("img");
+ im.src=imgs[i%21];
+ wall.appendChild(im);
+}
+
+/* 🎁 Gift logic */
+gift.onclick=()=>{
+ gift.style.display="none";
+ ribbon.style.display="block";
+
+ setTimeout(()=>ribbon.classList.add("open"),40);
+
+ setTimeout(()=>{
+  ribbon.style.display="none";
+  content.style.display="block";
+  bg.style.display="block";
+  startRockets();
+  document.getElementById("music").play();
+ },1300);
+};
+
+/* 🚀 Rocket fireworks */
+const c=document.getElementById("fire");
+const x=c.getContext("2d");
+c.width=innerWidth;
+c.height=innerHeight;
+
+let rockets=[], sparks=[];
+
+function launch(){
+ rockets.push({x:Math.random()*c.width,y:c.height,vy:-9});
+}
+
+function explode(r){
+ for(let i=0;i<150;i++){
+  sparks.push({
+   x:r.x,y:r.y,
+   dx:(Math.random()-0.5)*9,
+   dy:(Math.random()-0.5)*9,
+   life:100,
+   col:`hsl(${Math.random()*360},100%,60%)`
+  });
+ }
+}
+
+function startRockets(){setInterval(launch,900);}
+
+function animate(){
+ x.clearRect(0,0,c.width,c.height);
+
+ rockets.forEach((r,i)=>{
+  r.y+=r.vy;
+  x.fillStyle="white";
+  x.fillRect(r.x,r.y,2,8);
+  if(r.y<c.height/3){explode(r);rockets.splice(i,1);}
+ });
+
+ sparks.forEach((p,i)=>{
+  x.fillStyle=p.col;
+  x.fillRect(p.x,p.y,3,3);
+  p.x+=p.dx;p.y+=p.dy;p.life--;
+  if(p.life<=0)sparks.splice(i,1);
+ });
+
+ requestAnimationFrame(animate);
+}
+animate();
+</script>
+</body>
+</html>
